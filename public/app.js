@@ -23,6 +23,12 @@
                     controllerAs: 'vm',
                     url: '/',
                     templateUrl: '/layout/master.html'
+                })
+                .state('gyms', {
+                    controller: 'GymsViewController',
+                    controllerAs: 'vm',
+                    url: '/gyms',
+                    templateUrl: '/components/gyms/gyms.html'
                 });
 
             // $httpProvider.interceptors.push('httpInterceptor');

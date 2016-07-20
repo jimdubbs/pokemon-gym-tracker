@@ -40,9 +40,11 @@
   },
   "dependencies": {
     "body-parser": "^1.14.2",
-    "cookie-parser": "^1.4.0",
     "compression": "^1.6.1",
+    "cookie-parser": "^1.4.0",
     "cors": "^2.7.1",
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "pokemon-go-node-api": "^1.2.6",
+    "q": "^1.4.1"
   }
 }
