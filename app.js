@@ -48,9 +48,7 @@ app.on('MethodNotAllowed', unknownMethodHandler);
 var cors = require('cors')
 app.use(cors());
 
-// app.get('/*', function (req, res) {
-//     res.sendFile(path.join(__dirname + '/public/index.html'));
-// });
+
 
 var Pokeio = require('pokemon-go-node-api');
 var location = {
@@ -169,6 +167,10 @@ server.listen(app.get('port'), function () {
 });
 
 require('./api/routes.js')(app, Pokeio, gymLocations,pokemon);
+
+app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname + '/public/index.html'));
+});
 
 
 

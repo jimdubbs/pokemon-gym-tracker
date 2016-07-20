@@ -1,7 +1,7 @@
 module.exports = function (server, Pokeio, gymLocations,pokemon) {
 
     server.get('/api/getGymDetails', function (req, res, next) {
-
+        console.log('trying to get gym details');
         test().then(function (data) {
             console.log('SENDING DATA BACK');
             res.json(gymLocations);
