@@ -152,6 +152,7 @@ Pokeio.init(username, password, location, provider, function (err) {
     });
 });
 
+
  var fs = require("fs");
  console.log("\n *STARTING* \n");
 // Get content from file
@@ -159,7 +160,9 @@ Pokeio.init(username, password, location, provider, function (err) {
 // Define to JSON type
  var pokemon = JSON.parse(contents).pokemon;
 
-app.set('port', process.env.PORT || 8088);
+
+app.set('port', process.env.PORT || 8090);
+
 server.listen(app.get('port'), function () {
     console.log('Example app listening on port ' + app.get('port'));
 
