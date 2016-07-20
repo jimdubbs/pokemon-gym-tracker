@@ -16,5 +16,12 @@
     </div>
 </md-toolbar>
 <md-content>
-    <p>Track dem boyz</p>
+    <ui-gmap-google-map center="vm.map.center" zoom="vm.map.zoom" draggable="true">
+        <ui-gmap-markers models="vm.map.markers" coords="'self'"></ui-gmap-markers>
+    </ui-gmap-google-map>
+    <md-content>
+        <div>
+
+        </div>
+    </md-content>
 </md-content>

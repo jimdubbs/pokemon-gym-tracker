@@ -1,13 +1,15 @@
 (function () {
     'use strict';
 
-    angular.module('main', ['ui.router', 'ngResource', 'ngAnimate', 'ngMaterial', 'ngStorage'
+    angular.module('main', ['ui.router', 'ngResource', 'ngAnimate', 'ngMaterial', 'ngStorage', 'uiGmapgoogle-maps'
 
     ])
 
-        .config(function ($stateProvider, $urlRouterProvider, $locationProvider,
-            $urlMatcherFactoryProvider, $httpProvider, $mdThemingProvider) {
+        .config(function ($provide, $stateProvider, $urlRouterProvider, $locationProvider,
+            $urlMatcherFactoryProvider, $httpProvider, $mdThemingProvider, nemSimpleLoggerProvider) {
             $urlMatcherFactoryProvider.strictMode(false);
+
+            $provide.decorator.apply(null, nemSimpleLoggerProvider.decorator);
 
             $locationProvider
                 .html5Mode({
