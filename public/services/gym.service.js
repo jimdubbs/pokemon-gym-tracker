@@ -11,22 +11,33 @@
         var service = {
             loading: false,
             gyms: [],
-            getGymData: getGymData
+            getGymData: getGymData,
+            getGyms: getGyms
             
         };
 
         return service;
 
-        function getGymData(){
+        function getGyms(){
             console.log('trying to get gyms');
-            return $http.get('http://localhost:8090/api/getGymDetails', {
+            return $http.get('http://172.16.30.187:8090/api/getGyms', {
                 params: {}
             })
             .then(function (response) {
-                console.log(response);
                 var gyms = response.data;
                 service.gyms = gyms;
                 return gyms;
+            });
+        }
+
+        function getGymData(gym){
+            return $http.post('http://172.16.30.187:8090/api/getGymDetails', {
+                gym:gym
+            })
+            .then(function (response) {
+
+                var data = response.data;
+                return data;
             });
         }
      

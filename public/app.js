@@ -52,6 +52,10 @@
                     'default': '700'
                 })
                 .backgroundPalette('grey');
+
+            $mdThemingProvider.theme('dark-blue').backgroundPalette('blue').dark();
+            $mdThemingProvider.theme('dark-red').backgroundPalette('red').dark();
+            $mdThemingProvider.theme('dark-yellow').backgroundPalette('yellow');
         });
 
 })();

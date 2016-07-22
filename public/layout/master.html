@@ -20,27 +20,20 @@
         <ui-gmap-markers models="vm.map.markers" coords="'self'"></ui-gmap-markers>
     </ui-gmap-google-map>
     <md-content layout="row" layout-wrap>
-        <md-card ng-repeat="gym in vm.gyms" flex="33">
+        <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100" flex-gt-sm="50" flex-gt-md="33" ng-class="{'md-dark-red-theme': gym.data.team == 'Valor','md-dark-blue-theme': gym.data.team == 'Mystic', 'md-dark-yellow-theme': gym.data.team == 'Instinct'}">
             <md-card-header>
                 <md-card-avatar>
-                    <img ng-src="{{gym.data.guardPokemon.img}}" />
+                    <md-progress-circular ng-if="gym.isLoading" md-mode="indeterminate"></md-progress-circular>
+                    <img ng-if="!gym.isLoading" ng-src="{{gym.data.guardPokemon.img}}" />
                 </md-card-avatar>
                 <md-card-header-text>
                     <span class="md-title">{{gym.name}}</span>
                     <span class="md-subhead">Team {{gym.data.team}} - XP: {{gym.data.gymXP}}</span>
                 </md-card-header-text>
             </md-card-header>
-            <!--<img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out">-->
-            <!--<md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">Card header</span>
-                    </md-card-title-text>
-                </md-card-title>-->
-            <!--<md-card-content>
-                <p>
-                    {{gym.data.gymXP}}
-                </p>
-            </md-card-content>-->
+            <!--<md-card-actions layout="row" layout-align="end center">
+                <md-button ng-click="vm.clickGym(gym)">Action 1</md-button>
+            </md-card-actions>-->
         </md-card>
     </md-content>
 </md-content>
