@@ -1,15 +1,9 @@
-module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
+module.exports = function (server, PokeioCollection, gymLocations, pokemon) {
 
     server.get('/api/getGyms', function (req, res, next) {
         console.log('returning gym list');
         console.log(gymLocations);
         res.json(gymLocations);
-        // test().then(function (data) {
-        //     console.log('SENDING DATA BACK');
-        //     console.log(data);
-        //     res.json(gymLocations);
-        // });
-
 
     });
 
@@ -17,12 +11,67 @@ module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
         console.log('trying to get gym details');
         var gym = req.body.gym;
         console.log(gym);
-        getGymData(gym.coords.latitude,gym.coords.longitude)
-        .then(function(data){
-            res.json(data);
+        getGymData(gym.coords.latitude, gym.coords.longitude)
+            .then(function (data) {
+                res.json(data);
+            });
+
+    });
+
+    server.post('/api/heartbeat', function (req, res, next) {
+        console.log('heartbeat!');
+        var lat = req.body.lat;
+        var long = req.body.long;
+
+        var location = {
+            type: 'coords',
+            coords: { latitude: lat, longitude: long, altitude: 18 }
+        };
+
+        var Pokeio = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
+        Pokeio.SetLocation(location, function (err, loc) {
+            Pokeio.Heartbeat(function (err, heartbeat) {
+                if (err) {
+                    console.log(err);
+                }
+                
+                var gyms = [];
+                heartbeat.cells.forEach(function (ele, ind, arr) {
+                    if (heartbeat.cells[ind].Fort.length !== 0) {
+
+                        heartbeat.cells[ind].Fort.forEach(function (ele, i, a) {
+
+                            if (heartbeat.cells[ind].Fort[i].Team !== null) {
+
+                                // console.log('lat: ' + lat + '     ' + heartbeat.cells[ind].Fort[i].Latitude);
+                                // console.log('long: ' + long + '     ' + heartbeat.cells[ind].Fort[i].Longitude);
+
+                                console.log('we found a gym');
+
+                                var gym = {
+                                    name: 'Gym',
+                                    coords: { latitude: heartbeat.cells[ind].Fort[i].Latitude, longitude: heartbeat.cells[ind].Fort[i].Longitude, altitude: 18 },
+                                    isLoading: false,
+                                    data: {
+                                        fortId: heartbeat.cells[ind].Fort[i].FortId,
+                                        team: getTeamName(heartbeat.cells[ind].Fort[i].Team),
+                                        guardPokemon: getPokemon(heartbeat.cells[ind].Fort[i].GuardPokemonId),
+                                        gymXP: heartbeat.cells[ind].Fort[i].GymPoints.low,
+                                        location: { lat: lat, long: long },
+                                        theme: 'dark-red'
+                                    }
+                                };
+                                
+                                gyms.push(gym);
+
+                            }
+                        });
+                    }
+                });
+                
+                res.json(gyms);
+            });
         });
-
-
 
     });
 
@@ -36,6 +85,7 @@ module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
             coords: { latitude: lat, longitude: long, altitude: 18 }
         };
 
+        var Pokeio = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
         Pokeio.SetLocation(location, function (err, loc) {
             Pokeio.Heartbeat(function (err, heartbeat) {
                 if (err) {
@@ -45,11 +95,11 @@ module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
                     if (heartbeat.cells[ind].Fort.length !== 0) {
 
                         heartbeat.cells[ind].Fort.forEach(function (ele, i, a) {
-                            if(lat == 47.520086){
+                            if (lat == 47.520086) {
 
-                                }
+                            }
                             if (heartbeat.cells[ind].Fort[i].Team !== null) {
-                                
+
                                 // console.log('lat: ' + lat + '     ' + heartbeat.cells[ind].Fort[i].Latitude);
                                 // console.log('long: ' + long + '     ' + heartbeat.cells[ind].Fort[i].Longitude);
                                 if (lat == heartbeat.cells[ind].Fort[i].Latitude &&
@@ -62,7 +112,7 @@ module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
                                         team: getTeamName(heartbeat.cells[ind].Fort[i].Team),
                                         guardPokemon: getPokemon(heartbeat.cells[ind].Fort[i].GuardPokemonId),
                                         gymXP: heartbeat.cells[ind].Fort[i].GymPoints.low,
-                                        location: {lat: lat, long: long},
+                                        location: { lat: lat, long: long },
                                         theme: 'dark-red'
                                     }
                                     //gymLocations[gymIndex].data = data
@@ -73,7 +123,7 @@ module.exports = function (server, Pokeio, gymLocations, pokemon,pokeCred) {
                         });
                     }
                 });
-                deferred.resolve({res: 'dank'});
+                deferred.resolve({ res: 'dank' });
             });
         });
 

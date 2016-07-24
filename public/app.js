@@ -6,7 +6,8 @@
     ])
 
         .config(function ($provide, $stateProvider, $urlRouterProvider, $locationProvider,
-            $urlMatcherFactoryProvider, $httpProvider, $mdThemingProvider, nemSimpleLoggerProvider) {
+            $urlMatcherFactoryProvider, $httpProvider, $mdThemingProvider, nemSimpleLoggerProvider,
+            uiGmapGoogleMapApiProvider) {
             $urlMatcherFactoryProvider.strictMode(false);
 
             $provide.decorator.apply(null, nemSimpleLoggerProvider.decorator);
@@ -17,6 +18,11 @@
                     requireBase: true
                 });
 
+            uiGmapGoogleMapApiProvider.configure({
+                key: 'AIzaSyDO4yYkVmOfTFPkatJUVIgUD4yzUVQBK14',
+                v: '3.20', //defaults to latest 3.X anyhow
+                libraries: 'weather,geometry,visualization'
+            });
             $stateProvider
                 .state('main', {
                     controller: 'MasterViewController',

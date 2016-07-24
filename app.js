@@ -50,6 +50,16 @@ app.use(cors());
 
 var pokeCred = [
     {
+        username: 'PokemonData',
+        password: 'P@ssw0rd',
+        provider: 'ptc',
+        location: {
+            type: 'coords',
+            coords: { latitude: 47.476944, longitude: -53.056799, altitude: 18 }
+        }
+
+    },
+    {
         username: 'jimdubbs2',
         password: 'Pantera316',
         provider: 'ptc',
@@ -59,16 +69,6 @@ var pokeCred = [
         }
 
     }
-    // {
-    //     username: 'jimdubbs2',
-    //     password: 'Pantera316',
-    //     provider: 'ptc',
-    //     location: {
-    //         type: 'coords',
-    //         coords: { latitude: 47.476944, longitude: -53.056799, altitude: 18 }
-    //     }
-
-    // }
 ]
 
 var PokeIOCollection = [];
@@ -120,69 +120,38 @@ var gymLocations = [
 //         coords: { latitude: 47.518831, longitude: -52.955872, altitude: 18 }
 //     }
 // ]
-
-// pokeCred.forEach(function (element, i, array) {
-//     var Pokeio = require('pokemon-go-node-api');
-
-//     Pokeio.init(pokeCred[i].username, pokeCred[i].password, pokeCred[i].location, pokeCred[i].provider, function (err) {
-//         if (err) throw err;
-
-//         console.log('[i] Current location: ' + Pokeio.playerInfo.locationName);
-//         console.log('[i] lat/long/alt: : ' + Pokeio.playerInfo.latitude + ' ' + Pokeio.playerInfo.longitude + ' ' + Pokeio.playerInfo.altitude);
-
-//         Pokeio.GetProfile(function (err, profile) {
-//             if (err) throw err;
-
-//             console.log('[i] Username: ' + profile.username);
-//             console.log('[i] Poke Storage: ' + profile.poke_storage);
-//             console.log('[i] Item Storage: ' + profile.item_storage);
-
-//             var poke = 0;
-//             if (profile.currency[0].amount) {
-//                 poke = profile.currency[0].amount;
-//             }
-
-//             console.log('[i] Pokecoin: ' + poke);
-//             console.log('[i] Stardust: ' + profile.currency[1].amount);
-
-//         });
-//     });
-//     // var sleep = require('sleep');
-//     // sleep.sleep(4);
-//     PokeIOCollection.push(Pokeio);
-// });
-
 var Pokeio = require('pokemon-go-node-api');
+pokeCred.forEach(function (element, i, array) {
+    
+    var client = new Pokeio.Pokeio();
 
-Pokeio.init(pokeCred[0].username, pokeCred[0].password, pokeCred[0].location, pokeCred[0].provider, function (err) {
-    if (err) throw err;
-
-    console.log('[i] Current location: ' + Pokeio.playerInfo.locationName);
-    console.log('[i] lat/long/alt: : ' + Pokeio.playerInfo.latitude + ' ' + Pokeio.playerInfo.longitude + ' ' + Pokeio.playerInfo.altitude);
-
-    Pokeio.GetProfile(function (err, profile) {
+    client.init(pokeCred[i].username, pokeCred[i].password, pokeCred[i].location, pokeCred[i].provider, function (err) {
         if (err) throw err;
 
-        console.log('[i] Username: ' + profile.username);
-        console.log('[i] Poke Storage: ' + profile.poke_storage);
-        console.log('[i] Item Storage: ' + profile.item_storage);
+        console.log('[i] Current location: ' + client.playerInfo.locationName);
+        console.log('[i] lat/long/alt: : ' + client.playerInfo.latitude + ' ' + client.playerInfo.longitude + ' ' + client.playerInfo.altitude);
 
-        var poke = 0;
-        if (profile.currency[0].amount) {
-            poke = profile.currency[0].amount;
-        }
+        client.GetProfile(function (err, profile) {
+            if (err) throw err;
 
-        console.log('[i] Pokecoin: ' + poke);
-        console.log('[i] Stardust: ' + profile.currency[1].amount);
+            console.log('[i] Username: ' + profile.username);
+            console.log('[i] Poke Storage: ' + profile.poke_storage);
+            console.log('[i] Item Storage: ' + profile.item_storage);
 
+            var poke = 0;
+            if (profile.currency[0].amount) {
+                poke = profile.currency[0].amount;
+            }
 
+            console.log('[i] Pokecoin: ' + poke);
+            console.log('[i] Stardust: ' + profile.currency[1].amount);
+            PokeIOCollection.push(client);
 
+        });
     });
+
+    
 });
-
-
-
-
 
 
 var fs = require("fs");
@@ -200,7 +169,7 @@ server.listen(app.get('port'), function () {
 
 });
 
-require('./api/routes.js')(app, Pokeio, gymLocations, pokemon,pokeCred);
+require('./api/routes.js')(app, PokeIOCollection, gymLocations, pokemon);
 
 app.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname + '/public/index.html'));

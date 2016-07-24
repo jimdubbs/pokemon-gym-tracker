@@ -5,14 +5,17 @@
         .module('main')
         .factory('GymService', GymService);
 
-    GymService.$inject = ['$http'];
+    GymService.$inject = ['$http','urlService'];
 
-    function GymService($http) {
+    function GymService($http, urlService) {
+        
+        urlService.getUrls();
         var service = {
             loading: false,
             gyms: [],
             getGymData: getGymData,
-            getGyms: getGyms
+            getGyms: getGyms,
+            heartbeat: heartbeat
             
         };
 
@@ -20,7 +23,7 @@
 
         function getGyms(){
             console.log('trying to get gyms');
-            return $http.get('http://172.16.30.187:8090/api/getGyms', {
+            return $http.get(urlService.apiUrl+'api/getGyms', {
                 params: {}
             })
             .then(function (response) {
@@ -31,12 +34,28 @@
         }
 
         function getGymData(gym){
-            return $http.post('http://172.16.30.187:8090/api/getGymDetails', {
+            return $http.post(urlService.apiUrl+'api/getGymDetails', {
                 gym:gym
             })
             .then(function (response) {
 
                 var data = response.data;
+                return data;
+            });
+        }
+        
+        function heartbeat(lat,long){
+            return $http.post(urlService.apiUrl+'api/heartbeat', {
+                lat:lat, long: long
+            })
+            .then(function (response) {
+
+                var data = response.data;
+                console.log(data);
+                
+                data.forEach(function(gym){
+                    service.gyms.push(gym);
+                });
                 return data;
             });
         }

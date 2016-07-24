@@ -30,6 +30,10 @@ var UrlService = function ($location) {
 
             service.apiUrl = protocol + '172.16.30.187:8090/';
         }
+        
+        else if (host.indexOf('159.203.25.233') !== -1){
+            service.apiUrl = protocol + '159.203.25.233:8090/';
+        }
 
         else {
             service.apiUrl = protocol + 'poke-gym-tracker.azurewebsites.net/';

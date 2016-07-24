@@ -17,6 +17,27 @@
                 latitude: 47.5605644,
                 longitude: -52.7433038
             },
+            events: {
+                "click": function (map, event, handler) {
+                    console.log('clicked the map');
+                    console.log(handler[0].latLng.lat());
+                    console.log(handler[0].latLng.lng());
+
+                    vm.gymService.heartbeat(handler[0].latLng.lat(), handler[0].latLng.lng())
+                        .then(function (data) {
+
+                            data.forEach(function (gym) {
+                                vm.idCounter++;
+                                vm.map.markers.push({
+                                    id: vm.idCounter,
+                                    latitude: gym.coords.latitude,
+                                    longitude: gym.coords.longitude
+                                })
+                            });
+                        }
+                        )
+                }
+            },
             zoom: 13
         };
         vm.map.markers = [];
