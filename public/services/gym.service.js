@@ -15,7 +15,8 @@
             gyms: [],
             getGymData: getGymData,
             getGyms: getGyms,
-            heartbeat: heartbeat
+            heartbeat: heartbeat,
+            getPokemon: getPokemon
             
         };
 
@@ -52,11 +53,17 @@
 
                 var data = response.data;
                 console.log(data);
-                
-                data.forEach(function(gym){
-                    service.gyms.push(gym);
-                });
                 return data;
+            });
+        }
+        
+        function getPokemon(id){
+            return$http.get(urlService.apiUrl+'api/getPokemon/' + id, {
+            })
+            .then(function (response) {
+                var pokemon = response.data;
+                console.log(pokemon);
+                return pokemon;
             });
         }
      

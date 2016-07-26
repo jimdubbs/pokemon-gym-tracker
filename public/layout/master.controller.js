@@ -5,13 +5,14 @@
         .module('main')
         .controller('MasterViewController', MasterViewController);
 
-    MasterViewController.$inject = ['uiGmapGoogleMapApi', 'GymService', '$interval'];
-    function MasterViewController(uiGmapGoogleMapApi, gymService, $interval) {
+    MasterViewController.$inject = ['uiGmapGoogleMapApi', 'GymService', '$interval','$mdMedia','$mdSidenav'];
+    function MasterViewController(uiGmapGoogleMapApi, gymService, $interval,$mdMedia,$mdSidenav) {
         var vm = this;
         vm.uiGmapGoogleMapApi = uiGmapGoogleMapApi;
         vm.gymService = gymService;
         vm.$interval = $interval;
-
+        vm.$mdMedia = $mdMedia;
+        vm.$mdSidenav = $mdSidenav;
         vm.map = {
             center: {
                 latitude: 47.5605644,
@@ -23,19 +24,11 @@
                     console.log(handler[0].latLng.lat());
                     console.log(handler[0].latLng.lng());
 
-                    vm.gymService.heartbeat(handler[0].latLng.lat(), handler[0].latLng.lng())
-                        .then(function (data) {
+                    // vm.gymService.heartbeat(handler[0].latLng.lat(), handler[0].latLng.lng())
+                    //     .then(function (data) {
 
-                            data.forEach(function (gym) {
-                                vm.idCounter++;
-                                vm.map.markers.push({
-                                    id: vm.idCounter,
-                                    latitude: gym.coords.latitude,
-                                    longitude: gym.coords.longitude
-                                })
-                            });
-                        }
-                        )
+                    //     }
+                    //     );
                 }
             },
             zoom: 13
@@ -53,28 +46,26 @@
 
             vm.gymService.getGyms()
                 .then(function (data) {
-                    var gymCount = 0;
-                    vm.$interval(function () {
-                        console.log('waited 5 seconds');
-                        vm.gymService.getGymData(vm.gymService.gyms[gymCount])
-                            .then(function (response) {
-                                vm.updateGymData(response);
+                    console.log(vm.gymService.gyms);
+                    for (var gym in vm.gymService.gyms) {
+                        if (vm.gymService.gyms.hasOwnProperty(gym)) {
+                            vm.idCounter++;
+                            vm.map.markers.push({
+                                id: vm.idCounter,
+                                latitude: vm.gymService.gyms[gym].gym_state.fort_data.latitude,
+                                longitude: vm.gymService.gyms[gym].gym_state.fort_data.longitude
+                            })
 
-                            });
-                        gymCount = gymCount + 1;
-                    }, 1000, vm.gymService.gyms.length)
-                        .then(function (data) {
-                            console.log('ALL DONE');
-                        });
 
-                    vm.gymService.gyms.forEach(function (g) {
-                        vm.idCounter++;
-                        vm.map.markers.push({
-                            id: vm.idCounter,
-                            latitude: g.coords.latitude,
-                            longitude: g.coords.longitude
-                        })
-                    })
+                            //vm.gymService.gyms[gym].gym_state.fort_data.guardPokemon =
+                                // vm.gymService.getPokemon(vm.gymService.gyms[gym].gym_state.fort_data.guard_pokemon_id)
+                                //     .then(function(data){
+                                //         vm.gymService.gyms[gym].gym_state.fort_data.guardPokemon = data.data;
+                                //     });
+
+
+                        }
+                    }
 
                 });
 
@@ -104,6 +95,11 @@
                 gym.isLoading = false;
             }
         });
+    }
+    
+    MasterViewController.prototype.toggleSideNav = function () {
+        var vm = this;
+        vm.$mdSidenav('left').toggle();
     }
 
     MasterViewController.prototype.clickGym = function (gym) {

@@ -1,9 +1,35 @@
-module.exports = function (server, PokeioCollection, gymLocations, pokemon) {
+module.exports = function (server, PokeioCollection, gymLocations, pokemon, firebase) {
+    var s2 = require('s2geometry-node');
+
+    var db = firebase.database();
+    var ref = db.ref("pokemon");
+    var POGOProtos = require('node-pogo-protos');
 
     server.get('/api/getGyms', function (req, res, next) {
         console.log('returning gym list');
-        console.log(gymLocations);
-        res.json(gymLocations);
+
+        ref.child('gyms').once('value').then(function (snapshot) {
+            var gyms = snapshot.val();
+
+            for (var gym in gyms) {
+                if (gyms.hasOwnProperty(gym)) {
+
+                    gyms[gym].gym_state.fort_data.guardPokemon = getPokemon(gyms[gym].gym_state.fort_data.guard_pokemon_id);
+                    
+                    gyms[gym].gym_state.memberships.forEach(function(g){
+                         g.pokemon_data.pokemon = getPokemon(g.pokemon_data.pokemon_id);
+                    });
+
+                }
+            }
+
+
+            res.json(gyms);
+            // ...
+        }, function (errorObject) {
+            console.log("The read failed: " + errorObject.code);
+        });
+
 
     });
 
@@ -18,6 +44,15 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon) {
 
     });
 
+    server.get('/api/getPokemon/:id', function (req, res, next) {
+        console.log('trying to get pokemon');
+        var id = req.params.id;
+        var pokemon = getPokemon(id);
+        console.log(pokemon);
+        res.json(pokemon);
+
+    });
+
     server.post('/api/heartbeat', function (req, res, next) {
         console.log('heartbeat!');
         var lat = req.body.lat;
@@ -28,129 +63,65 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon) {
             coords: { latitude: lat, longitude: long, altitude: 18 }
         };
 
-        var Pokeio = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
-        Pokeio.SetLocation(location, function (err, loc) {
-            Pokeio.Heartbeat(function (err, heartbeat) {
-                if (err) {
-                    console.log(err);
-                }
-                
-                var gyms = [];
-                heartbeat.cells.forEach(function (ele, ind, arr) {
-                    if (heartbeat.cells[ind].Fort.length !== 0) {
+        //var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
+        var client = PokeioCollection[0];
+        var cellIDs = getCellIDs(10, lat, long);
+        client.setPosition(lat, long);
+        client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+            .then(mapObjects => {
+                client.batchStart();
 
-                        heartbeat.cells[ind].Fort.forEach(function (ele, i, a) {
+                mapObjects.map_cells.map(cell => cell.forts)
+                    .reduce((a, b) => a.concat(b))
+                    .filter(fort => fort.type === 0)
+                    .forEach(fort => client.getGymDetails(fort.id, fort.latitude, fort.longitude));
 
-                            if (heartbeat.cells[ind].Fort[i].Team !== null) {
+                return client.batchCall();
+            })
+            .then(gyms => {
 
-                                // console.log('lat: ' + lat + '     ' + heartbeat.cells[ind].Fort[i].Latitude);
-                                // console.log('long: ' + long + '     ' + heartbeat.cells[ind].Fort[i].Longitude);
+                var gymRef = ref.child('gyms');
+                if (Array.isArray(gyms)) {
+                    console.log('is array');
+                    gyms.forEach(function (gym) {
+                        var refTest = db.ref('pokemon/gyms');
+                        refTest.orderByChild("gym_state/fort_data/id").equalTo(gym.gym_state.fort_data.id).once("value", function (snapshot) {
+                            if (snapshot.val() == null) {
+                                console.log('pushing new gym');
 
-                                console.log('we found a gym');
-
-                                var gym = {
-                                    name: 'Gym',
-                                    coords: { latitude: heartbeat.cells[ind].Fort[i].Latitude, longitude: heartbeat.cells[ind].Fort[i].Longitude, altitude: 18 },
-                                    isLoading: false,
-                                    data: {
-                                        fortId: heartbeat.cells[ind].Fort[i].FortId,
-                                        team: getTeamName(heartbeat.cells[ind].Fort[i].Team),
-                                        guardPokemon: getPokemon(heartbeat.cells[ind].Fort[i].GuardPokemonId),
-                                        gymXP: heartbeat.cells[ind].Fort[i].GymPoints.low,
-                                        location: { lat: lat, long: long },
-                                        theme: 'dark-red'
-                                    }
-                                };
-                                
-                                gyms.push(gym);
-
+                                gym.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gym.gym_state.fort_data.owned_by_team)
+                                gymRef.push(gym);
                             }
                         });
-                    }
-                });
-                
+
+                    });
+                }
+                else {
+                    console.log('just an obj');
+                    console.log(gyms.gym_state.fort_data.id);
+                    var refTest = db.ref('pokemon/gyms');
+                    refTest.orderByChild("gym_state/fort_data/id").equalTo(gyms.gym_state.fort_data.id).once("value", function (snapshot) {
+                        console.log('snapshot val:');
+                        console.log(snapshot.val());
+                        if (snapshot.val() == null) {
+                            console.log('pushing new gym');
+                            gyms.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gyms.gym_state.fort_data.owned_by_team)
+                            gymRef.push(gyms);
+                        }
+                    });
+                }
+
                 res.json(gyms);
-            });
-        });
+            }, function (data) {
+                console.log('was rejected');
+
+                console.log(data);
+                res.json({})
+            })
+            .catch(console.error);
+
 
     });
-
-    function getGymData(lat, long) {
-
-        var Q = require('q');
-        var deferred = Q.defer();
-
-        var location = {
-            type: 'coords',
-            coords: { latitude: lat, longitude: long, altitude: 18 }
-        };
-
-        var Pokeio = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
-        Pokeio.SetLocation(location, function (err, loc) {
-            Pokeio.Heartbeat(function (err, heartbeat) {
-                if (err) {
-                    console.log(err);
-                }
-                heartbeat.cells.forEach(function (ele, ind, arr) {
-                    if (heartbeat.cells[ind].Fort.length !== 0) {
-
-                        heartbeat.cells[ind].Fort.forEach(function (ele, i, a) {
-                            if (lat == 47.520086) {
-
-                            }
-                            if (heartbeat.cells[ind].Fort[i].Team !== null) {
-
-                                // console.log('lat: ' + lat + '     ' + heartbeat.cells[ind].Fort[i].Latitude);
-                                // console.log('long: ' + long + '     ' + heartbeat.cells[ind].Fort[i].Longitude);
-                                if (lat == heartbeat.cells[ind].Fort[i].Latitude &&
-                                    long == heartbeat.cells[ind].Fort[i].Longitude) {
-                                    console.log('we found a gym');
-
-
-                                    var data = {
-                                        fortId: heartbeat.cells[ind].Fort[i].FortId,
-                                        team: getTeamName(heartbeat.cells[ind].Fort[i].Team),
-                                        guardPokemon: getPokemon(heartbeat.cells[ind].Fort[i].GuardPokemonId),
-                                        gymXP: heartbeat.cells[ind].Fort[i].GymPoints.low,
-                                        location: { lat: lat, long: long },
-                                        theme: 'dark-red'
-                                    }
-                                    //gymLocations[gymIndex].data = data
-                                    deferred.resolve(data);
-                                }
-
-                            }
-                        });
-                    }
-                });
-                deferred.resolve({ res: 'dank' });
-            });
-        });
-
-        return deferred.promise;
-    }
-
-    function test() {
-
-        var Q = require('q');
-
-
-        var proms = [];
-        gymLocations.forEach(function (element, index, array) {
-
-            // getGymData(gymLocations[index].coords.latitude, gymLocations[index].coords.longitude, index)
-            //     .then(function(data){
-
-            //     });
-
-            proms.push(getGymData(gymLocations[index].coords.latitude, gymLocations[index].coords.longitude, index));
-
-
-        });
-        console.log('haven executed yet');
-
-        return Q.allSettled(proms);
-    }
 
 
     function getTeamName(teamId) {
@@ -173,4 +144,29 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon) {
 
         return result[0];
     }
+
+    function getCellIDs(radius, lat, lng) {
+        var cell = new s2.S2CellId(new s2.S2LatLng(lat, lng)),
+            parentCell = cell.parent(15),
+            prevCell = parentCell.prev(),
+            nextCell = parentCell.next(),
+            cellIDs = [parentCell.id()];
+
+        for (var i = 0; i < radius; i++) {
+            cellIDs.unshift(prevCell.id());
+            cellIDs.push(nextCell.id());
+            prevCell = prevCell.prev();
+            nextCell = nextCell.next();
+        }
+
+        return cellIDs;
+    }
+
+    function getEnumKeyByValue(enumObj, val) {
+        for (var key of Object.keys(enumObj)) {
+            if (enumObj[key] === val) return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+        }
+        return null;
+    }
+
 }

@@ -15,25 +15,52 @@
         </md-button>
     </div>
 </md-toolbar>
-<md-content>
-    <ui-gmap-google-map center="vm.map.center" zoom="vm.map.zoom" draggable="true" events="vm.map.events">
-        <ui-gmap-markers models="vm.map.markers" coords="'self'"></ui-gmap-markers>
-    </ui-gmap-google-map>
-    <md-content layout="row" layout-wrap>
-        <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100" flex-gt-sm="50" flex-gt-md="33" ng-class="{'md-dark-red-theme': gym.data.team == 'Valor','md-dark-blue-theme': gym.data.team == 'Mystic', 'md-dark-yellow-theme': gym.data.team == 'Instinct'}">
+
+<section layout="row" flex>
+
+    <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="vm.$mdMedia('gt-md')" md-disable-backdrop md-whiteframe="4">
+        <md-toolbar class="md-theme-indigo">
+            <h1 class="md-toolbar-tools">Gyms</h1>
+        </md-toolbar>
+        <md-content layout-wrap>
+            <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100"  ng-class="{'md-dark-red-theme': gym.gym_state.fort_data.team == 'Red','md-dark-blue-theme': gym.gym_state.fort_data.team == 'Blue', 'md-dark-yellow-theme': gym.gym_state.fort_data.team == 'Yellow'}">
             <md-card-header>
                 <md-card-avatar>
                     <md-progress-circular ng-if="gym.isLoading" md-mode="indeterminate"></md-progress-circular>
-                    <img ng-if="!gym.isLoading" ng-src="{{gym.data.guardPokemon.img}}" />
+                    <img ng-if="!gym.isLoading" ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" />
                 </md-card-avatar>
                 <md-card-header-text>
                     <span class="md-title">{{gym.name}}</span>
-                    <span class="md-subhead">Team {{gym.data.team}} - XP: {{gym.data.gymXP}}</span>
+                    <span class="md-subhead">Team {{gym.gym_state.fort_data.team}} - XP: {{gym.gym_state.fort_data.gym_points.low}}</span>
                 </md-card-header-text>
             </md-card-header>
             <!--<md-card-actions layout="row" layout-align="end center">
                 <md-button ng-click="vm.clickGym(gym)">Action 1</md-button>
-            </md-card-actions>-->
+            </md-card-actions>9-->
         </md-card>
+        </md-content>
+    </md-sidenav>
+
+    <md-content flex layout-fill>
+        <ui-gmap-google-map center="vm.map.center" zoom="vm.map.zoom" draggable="true" events="vm.map.events">
+            <ui-gmap-markers models="vm.map.markers" coords="'self'"></ui-gmap-markers>
+        </ui-gmap-google-map>
+        <!--<md-content layout="row" layout-wrap>
+        <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100" flex-gt-sm="50" flex-gt-md="33" ng-class="{'md-dark-red-theme': gym.gym_state.fort_data.team == 'Red','md-dark-blue-theme': gym.gym_state.fort_data.team == 'Blue', 'md-dark-yellow-theme': gym.gym_state.fort_data.team == 'Yellow'}">
+            <md-card-header>
+                <md-card-avatar>
+                    <md-progress-circular ng-if="gym.isLoading" md-mode="indeterminate"></md-progress-circular>
+                    <img ng-if="!gym.isLoading" ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" />
+                </md-card-avatar>
+                <md-card-header-text>
+                    <span class="md-title">{{gym.name}}</span>
+                    <span class="md-subhead">Team {{gym.gym_state.fort_data.team}} - XP: {{gym.gym_state.fort_data.gym_points.low}}</span>
+                </md-card-header-text>
+            </md-card-header>
+            <!--<md-card-actions layout="row" layout-align="end center">
+                <md-button ng-click="vm.clickGym(gym)">Action 1</md-button>
+            </md-card-actions>
+        </md-card>
+    </md-content> -->
     </md-content>
-</md-content>
+</section>
