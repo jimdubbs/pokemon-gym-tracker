@@ -4,7 +4,7 @@
             <md-icon md-font-set="material-icons">menu</md-icon>
         </md-button>
         <h2>
-            <span>Pokemon GO Tracker</span>
+            <span>Gym Tracker</span>
         </h2>
         <span flex></span>
         <md-button class="md-icon-button" aria-label="Favorite">
@@ -16,51 +16,44 @@
     </div>
 </md-toolbar>
 
-<section layout="row" flex>
+<md-content layout="row" flex>
 
-    <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="vm.$mdMedia('gt-md')" md-disable-backdrop md-whiteframe="4">
-        <md-toolbar class="md-theme-indigo">
-            <h1 class="md-toolbar-tools">Gyms</h1>
-        </md-toolbar>
-        <md-content layout-wrap>
-            <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100"  ng-class="{'md-dark-red-theme': gym.gym_state.fort_data.team == 'Red','md-dark-blue-theme': gym.gym_state.fort_data.team == 'Blue', 'md-dark-yellow-theme': gym.gym_state.fort_data.team == 'Yellow'}">
-            <md-card-header>
-                <md-card-avatar>
-                    <md-progress-circular ng-if="gym.isLoading" md-mode="indeterminate"></md-progress-circular>
-                    <img ng-if="!gym.isLoading" ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" />
-                </md-card-avatar>
-                <md-card-header-text>
-                    <span class="md-title">{{gym.name}}</span>
-                    <span class="md-subhead">Team {{gym.gym_state.fort_data.team}} - XP: {{gym.gym_state.fort_data.gym_points.low}}</span>
-                </md-card-header-text>
-            </md-card-header>
-            <!--<md-card-actions layout="row" layout-align="end center">
-                <md-button ng-click="vm.clickGym(gym)">Action 1</md-button>
-            </md-card-actions>9-->
-        </md-card>
-        </md-content>
-    </md-sidenav>
+    <md-content flex="30" layout="row">
+        <md-list class="md-dense" flex>
+            <md-subheader class="md-no-sticky">Gyms</md-subheader>
+            <md-list-item class="md-3-line" ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms"  ng-class="{'gym-red': gym.gym_state.fort_data.team == 'Red','gym-blue': gym.gym_state.fort_data.team == 'Blue', 'gym-yellow': gym.gym_state.fort_data.team == 'Yellow'}">
+                <img ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" class="md-avatar" />
+                
+                <div class="md-list-item-text" layout="column" >
+                    <h3>{{gym.name}}</h3>
+                    <h4> Team {{gym.gym_state.fort_data.team}} </h4>
+                    <p>XP: {{gym.gym_state.fort_data.gym_points.low}}</p>
+                </div>
+                
+                <md-divider></md-divider>
+            </md-list-item>
 
-    <md-content flex layout-fill>
+        </md-list>
+    </md-content>
+
+    <md-content layout="column" flex>
         <ui-gmap-google-map center="vm.map.center" zoom="vm.map.zoom" draggable="true" events="vm.map.events">
             <ui-gmap-markers models="vm.map.markers" coords="'self'"></ui-gmap-markers>
         </ui-gmap-google-map>
-        <!--<md-content layout="row" layout-wrap>
-        <md-card ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" flex="100" flex-gt-sm="50" flex-gt-md="33" ng-class="{'md-dark-red-theme': gym.gym_state.fort_data.team == 'Red','md-dark-blue-theme': gym.gym_state.fort_data.team == 'Blue', 'md-dark-yellow-theme': gym.gym_state.fort_data.team == 'Yellow'}">
-            <md-card-header>
-                <md-card-avatar>
-                    <md-progress-circular ng-if="gym.isLoading" md-mode="indeterminate"></md-progress-circular>
-                    <img ng-if="!gym.isLoading" ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" />
-                </md-card-avatar>
-                <md-card-header-text>
-                    <span class="md-title">{{gym.name}}</span>
-                    <span class="md-subhead">Team {{gym.gym_state.fort_data.team}} - XP: {{gym.gym_state.fort_data.gym_points.low}}</span>
-                </md-card-header-text>
-            </md-card-header>
-            <!--<md-card-actions layout="row" layout-align="end center">
-                <md-button ng-click="vm.clickGym(gym)">Action 1</md-button>
-            </md-card-actions>
-        </md-card>
-    </md-content> -->
+
+        <md-content flex layout="row" layout-wrap>
+
+            <md-card ng-repeat="pokemon in vm.selectedGym.gym_state.memberships" flex="30">
+                <md-card-header>
+                    <md-card-avatar>
+                        <img ng-src="{{pokemon.pokemon_data.pokemon.img}}" />
+                    </md-card-avatar>
+                    <md-card-header-text>
+                        <span class="md-title">{{pokemon.pokemon_data.pokemon.name}}({{pokemon.pokemon_data.cp}})</span>
+                        <span class="md-subhead"> Owner: {{pokemon.trainer_public_profile.name}}</span>
+                    </md-card-header-text>
+                </md-card-header>
+            </md-card>
+        </md-content>
+
     </md-content>
-</section>

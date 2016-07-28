@@ -106,12 +106,15 @@
         var vm = this;
         //vm.uiGmapGoogleMapApi;
         console.log('clicked!');
+        console.log(gym);
         vm.map.center = {
-            latitude: gym.coords.latitude,
-            longitude: gym.coords.longitude
+            latitude: gym.gym_state.fort_data.latitude,
+            longitude: gym.gym_state.fort_data.longitude
         };
 
         vm.map.zoom = 17
+
+        vm.selectedGym = gym;
     }
 
 

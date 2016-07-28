@@ -5,44 +5,93 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
     var ref = db.ref("pokemon");
     var POGOProtos = require('node-pogo-protos');
 
-    // setTimeout(function () {
-    //     console.log('INTERVAL');
-    //     ref.child('gyms').once('value').then(function (snapshot) {
-    //         var gyms = snapshot.val();
-    //         //PokeioCollection[0].batchStart();
-    //         //PokeioCollection[1].batchStart();
-    //         for (var gym in gyms) {
-    //             if (gyms.hasOwnProperty(gym)) {
 
-    //                 var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
-    //                 //client.setPosition(gyms[gym].gym_state.fort_data.latitude, gyms[gym].gym_state.fort_data.longitude);
-    //                 client.getGymDetails(gyms[gym].gym_state.fort_data.id, gyms[gym].gym_state.fort_data.latitude, gyms[gym].gym_state.fort_data.longitude)
-    //                     .then(function(data){
-    //                        console.log(data); 
-    //                     });
-                    
+    ref.child('gyms').once('value').then(function (snapshot) {
+        var gyms = snapshot.val();
+        console.log('we in the heartbeat');
 
-    //             }
-    //         }
-            
-            
-    //         // PokeioCollection[0].batchCall()
-    //         //     .then(function(gyms){
-    //         //        console.log('client 1 batch'); 
-    //         //        console.log(gyms);
-    //         //     });
-             
-    //         // PokeioCollection[1].batchCall()
-    //         //     .then(function(gyms){
-    //         //        console.log('client 2 batch'); 
-    //         //        console.log(gyms);
-    //         //     });
-            
-    //         // ...
-    //     }, function (errorObject) {
-    //         console.log("The read failed: " + errorObject.code);
-    //     });
-    // }, 1000);
+        var gymKeys = Object.keys(gyms);
+
+        numberOfGyms = gymKeys.length;
+        //console.log(gymKeys);
+        var startingIndex = 0;
+        setInterval(function () {
+            if (startingIndex > numberOfGyms) {
+                startingIndex = 0;
+            }
+
+            var gym = gyms[gymKeys[startingIndex]];
+            if (gym) {
+
+
+                var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
+
+                var lat = gym.gym_state.fort_data.latitude;
+                var long = gym.gym_state.fort_data.longitude;
+                var cellIDs = getCellIDs(10, lat, long);
+                console.log('pulling gym: ' + gym.gym_state.fort_data.id);
+                client.setPosition(lat, long);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat done');
+                        client.getGymDetails(gym.gym_state.fort_data.id, lat, long)
+                            .then(function (data) {
+                                var refTest = db.ref('pokemon/gyms');
+                                refTest.orderByChild("gym_state/fort_data/id").equalTo(gym.gym_state.fort_data.id).once("value", function (snapshot) {
+                                    if (snapshot.val() !== null) {
+                                        try {
+                                            //snapshot.update(data);
+                                            console.log(Object.keys(snapshot.val())[0]);
+                                            var id = Object.keys(snapshot.val())[0];
+                                            var gymRef = db.ref('pokemon/gyms/' + id);
+                                            data.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gym.gym_state.fort_data.owned_by_team)
+                                            gymRef.update(data);
+                                        }
+                                        catch (exception) { console.log(exception) }
+                                    }
+                                });
+                            });
+                    });
+
+            }
+            startingIndex++;
+
+        }, 10000)
+        //console.log(gym[1]);
+        // for (var gym in gyms) {
+        //     if (gyms.hasOwnProperty(gym)) {
+
+        //         var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
+        //         //client.setPosition(gyms[gym].gym_state.fort_data.latitude, gyms[gym].gym_state.fort_data.longitude);
+        //         client.getGymDetails(gyms[gym].gym_state.fort_data.id, gyms[gym].gym_state.fort_data.latitude, gyms[gym].gym_state.fort_data.longitude)
+        //             .then(function(data){
+        //                console.log(data); 
+        //             });
+
+
+        //     }
+        // }
+
+
+        // PokeioCollection[0].batchCall()
+        //     .then(function(gyms){
+        //        console.log('client 1 batch'); 
+        //        console.log(gyms);
+        //     });
+
+        // PokeioCollection[1].batchCall()
+        //     .then(function(gyms){
+        //        console.log('client 2 batch'); 
+        //        console.log(gyms);
+        //     });
+
+        // ...
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
+
+
+
 
 
 
