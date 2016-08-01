@@ -5,14 +5,16 @@
         .module('main')
         .controller('MasterViewController', MasterViewController);
 
-    MasterViewController.$inject = ['uiGmapGoogleMapApi', 'GymService', '$interval','$mdMedia','$mdSidenav'];
-    function MasterViewController(uiGmapGoogleMapApi, gymService, $interval,$mdMedia,$mdSidenav) {
+    MasterViewController.$inject = ['uiGmapGoogleMapApi', 'GymService', '$interval', '$mdMedia', '$mdSidenav','$state','$scope'];
+    function MasterViewController(uiGmapGoogleMapApi, gymService, $interval, $mdMedia, $mdSidenav, $state,$scope) {
         var vm = this;
         vm.uiGmapGoogleMapApi = uiGmapGoogleMapApi;
         vm.gymService = gymService;
+        vm.$scope = $scope;
         vm.$interval = $interval;
         vm.$mdMedia = $mdMedia;
         vm.$mdSidenav = $mdSidenav;
+        vm.$state = $state;
         vm.map = {
             center: {
                 latitude: 47.5605644,
@@ -26,6 +28,26 @@
 
                     // vm.gymService.heartbeat(handler[0].latLng.lat(), handler[0].latLng.lng())
                     //     .then(function (data) {
+
+                    //         data.forEach(function (pokemon) {
+                    //             vm.idCounter++;
+                    //             vm.map.markers.push({
+                    //                 id: vm.idCounter,
+                    //                 coords: {
+                    //                     latitude: pokemon.latitude,
+                    //                     longitude: pokemon.longitude
+                    //                 },
+                    //                 options: {
+                    //                     labelClass: 'marker_labels',
+                    //                     labelAnchor: '12 45',
+                    //                     labelContent: pokemon.pokemon_data.pokemon.name
+                    //                 },
+                    //                 icon: {
+                    //                     url: pokemon.pokemon_data.pokemon.img,
+                    //                     scaledSize: new google.maps.Size(40, 40)
+                    //                 }
+                    //             })
+                    //         });
 
                     //     }
                     //     );
@@ -52,17 +74,14 @@
                             vm.idCounter++;
                             vm.map.markers.push({
                                 id: vm.idCounter,
-                                latitude: vm.gymService.gyms[gym].gym_state.fort_data.latitude,
-                                longitude: vm.gymService.gyms[gym].gym_state.fort_data.longitude
+                                coords: {
+                                    latitude: vm.gymService.gyms[gym].gym_state.fort_data.latitude,
+                                    longitude: vm.gymService.gyms[gym].gym_state.fort_data.longitude
+                                },
+                                options: {
+                                    icon: ''
+                                }
                             })
-
-
-                            //vm.gymService.gyms[gym].gym_state.fort_data.guardPokemon =
-                                // vm.gymService.getPokemon(vm.gymService.gyms[gym].gym_state.fort_data.guard_pokemon_id)
-                                //     .then(function(data){
-                                //         vm.gymService.gyms[gym].gym_state.fort_data.guardPokemon = data.data;
-                                //     });
-
 
                         }
                     }
@@ -71,11 +90,11 @@
 
 
             function showPosition(position) {
-                vm.map.markers.push({
-                    id: 1,
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                });
+                // vm.map.markers.push({
+                //     id: 1,
+                //     latitude: position.coords.latitude,
+                //     longitude: position.coords.longitude
+                // });
 
                 vm.map.center = {
                     latitude: position.coords.latitude,
@@ -87,16 +106,14 @@
         }
     }
 
-    MasterViewController.prototype.updateGymData = function (data) {
+    MasterViewController.prototype.updateGymData = function (gym) {
         var vm = this;
-        vm.gymService.gyms.filter(function (gym) {
-            if (gym.coords.latitude == data.location.lat && gym.coords.longitude == data.location.long) {
-                gym.data = data;
-                gym.isLoading = false;
-            }
-        });
+        vm.gymService.getGymData(gym)
+            .then(function(data){
+                vm.gymService.updateGymData(data);
+            });
     }
-    
+
     MasterViewController.prototype.toggleSideNav = function () {
         var vm = this;
         vm.$mdSidenav('left').toggle();
@@ -114,7 +131,11 @@
 
         vm.map.zoom = 17
 
-        vm.selectedGym = gym;
+        vm.gymService.selectedGym = gym;
+
+        if (!vm.$mdMedia('gt-md')){
+            vm.$state.go('gym');
+        }
     }
 
 

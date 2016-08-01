@@ -5,20 +5,22 @@
         .module('main')
         .controller('GymsViewController', GymsViewController);
 
-    GymsViewController.$inject = ['GymService'];
-    function GymsViewController(gymService) {
+    GymsViewController.$inject = ['GymService','$state'];
+    function GymsViewController(gymService,$state) {
         var vm = this;
         vm.gymService = gymService;
-
+        vm.$state = $state;
         activate();
 
         ////////////////
 
         function activate() { 
-            vm.gymService.getGymData()
-                .then(function(data){
-                    console.log(vm.gymService.gyms);
-                });
+           
         }
+    }
+
+    GymsViewController.prototype.back = function(){
+        var vm = this;
+        vm.$state.go('main');
     }
 })();

@@ -1,4 +1,4 @@
-module.exports = function (server, PokeioCollection, gymLocations, pokemon, firebase) {
+module.exports = function (server, PokeioCollection, pokemon, firebase) {
     var s2 = require('s2geometry-node');
 
     var db = firebase.database();
@@ -11,18 +11,24 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
         ref.child('gyms').once('value').then(function (snapshot) {
             var gyms = snapshot.val();
 
-            for (var gym in gyms) {
-                if (gyms.hasOwnProperty(gym)) {
+            try {
 
-                    gyms[gym].gym_state.fort_data.guardPokemon = getPokemon(gyms[gym].gym_state.fort_data.guard_pokemon_id);
-                    
-                    gyms[gym].gym_state.memberships.forEach(function(g){
-                         g.pokemon_data.pokemon = getPokemon(g.pokemon_data.pokemon_id);
-                    });
 
+                for (var gym in gyms) {
+                    if (gyms.hasOwnProperty(gym)) {
+
+                        gyms[gym].gym_state.fort_data.guardPokemon = getPokemon(gyms[gym].gym_state.fort_data.guard_pokemon_id);
+
+                        gyms[gym].gym_state.memberships.forEach(function (g) {
+                            g.pokemon_data.pokemon = getPokemon(g.pokemon_data.pokemon_id);
+                        });
+
+                    }
                 }
             }
-
+            catch (ex) {
+                console.log(ex);
+            }
 
             res.json(gyms);
             // ...
@@ -33,14 +39,62 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
 
     });
 
-    server.post('/api/getGymDetails', function (req, res, next) {
-        console.log('trying to get gym details');
+    server.post('/api/updateGymDetails', function (req, res, next) {
+        console.log('trying to update gym details');
         var gym = req.body.gym;
         console.log(gym);
-        getGymData(gym.coords.latitude, gym.coords.longitude)
-            .then(function (data) {
-                res.json(data);
-            });
+
+        var lat = gym.gym_state.fort_data.latitude;
+        var long = gym.gym_state.fort_data.longitude;
+
+        console.log(lat);
+        console.log(long);
+        var clientObj = getClient(lat, long);
+
+        if (clientObj) {
+            var client = clientObj.client;
+            var cellIDs = getCellIDs(10, lat, long);
+            console.log('pulling gym: ' + gym.name + '  -  Client name: ' + clientObj.name);
+
+            client.setPosition(lat, long);
+            client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                .then(mapObjects => {
+                    console.log('heartbeat done');
+
+                    client.getGymDetails(gym.gym_state.fort_data.id, lat, long)
+                        .then(function (data) {
+                            console.log('got Gym details:' + data.gym_state.fort_data.id);
+                            var refTest = db.ref('pokemon/gyms');
+                            refTest.orderByChild("gym_state/fort_data/id").equalTo(gym.gym_state.fort_data.id).once("value", function (snapshot) {
+                                if (snapshot.val() !== null) {
+                                    console.log('we found a db record for ' + gym.gym_state.fort_data.id);
+                                    try {
+                                        //snapshot.update(data);
+                                        console.log(Object.keys(snapshot.val())[0]);
+                                        var id = Object.keys(snapshot.val())[0];
+                                        var gymRef = db.ref('pokemon/gyms/' + id);
+                                        data.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, data.gym_state.fort_data.owned_by_team);
+                                        data.lastUpdate = new Date();
+                                        gymRef.update(data);
+
+                                        res.json(data)
+                                    }
+                                    catch (exception) { console.log(exception) }
+                                }
+                                else {
+                                    console.log('we didnt find a db record for ' + gym.gym_state.fort_data.id);
+                                }
+                            });
+                        }, function (error) {
+                            console.log('promise was rejected');
+                            console.log(error);
+                        });
+                });
+
+        }
+        else {
+            console.log('didnt find a client for ' + gym.name);
+        }
 
     });
 
@@ -64,7 +118,7 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
         };
 
         //var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
-        var client = PokeioCollection[0];
+        var client = PokeioCollection[2];
         var cellIDs = getCellIDs(10, lat, long);
         client.setPosition(lat, long);
         client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
@@ -98,17 +152,19 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
                 }
                 else {
                     console.log('just an obj');
-                    console.log(gyms.gym_state.fort_data.id);
-                    var refTest = db.ref('pokemon/gyms');
-                    refTest.orderByChild("gym_state/fort_data/id").equalTo(gyms.gym_state.fort_data.id).once("value", function (snapshot) {
-                        console.log('snapshot val:');
-                        console.log(snapshot.val());
-                        if (snapshot.val() == null) {
-                            console.log('pushing new gym');
-                            gyms.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gyms.gym_state.fort_data.owned_by_team)
-                            gymRef.push(gyms);
-                        }
-                    });
+                    console.log(gyms);
+                    if (gyms.gym_state) {
+                        var refTest = db.ref('pokemon/gyms');
+                        refTest.orderByChild("gym_state/fort_data/id").equalTo(gyms.gym_state.fort_data.id).once("value", function (snapshot) {
+                            console.log('snapshot val:');
+                            console.log(snapshot.val());
+                            if (snapshot.val() == null) {
+                                console.log('pushing new gym');
+                                gyms.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gyms.gym_state.fort_data.owned_by_team)
+                                gymRef.push(gyms);
+                            }
+                        });
+                    }
                 }
 
                 res.json(gyms);
@@ -118,6 +174,54 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
                 console.log(data);
                 res.json({})
             })
+            .catch(console.error);
+
+
+    });
+
+
+    server.post('/api/pokeHeartbeat', function (req, res, next) {
+        console.log('heartbeat!');
+        var lat = req.body.lat;
+        var long = req.body.long;
+
+        var location = {
+            type: 'coords',
+            coords: { latitude: lat, longitude: long, altitude: 18 }
+        };
+
+        //var client = PokeioCollection[Math.floor(Math.random() * PokeioCollection.length)];
+        var client = PokeioCollection[2];
+        var cellIDs = getCellIDs(10, lat, long);
+        client.setPosition(lat, long);
+        client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+            .then(mapObjects => {
+                var pokemons = [];
+                if (mapObjects.map_cells) {
+                    mapObjects.map_cells.forEach(function (cell) {
+                        if (cell.wild_pokemons.length > 0) {
+                            console.log('we found one');
+                            console.log(cell.wild_pokemons);
+                            cell.wild_pokemons.forEach(function (poke) {
+                                console.log(poke);
+                                poke.pokemon_data.pokemon = getPokemon(poke.pokemon_data.pokemon_id);
+                                pokemons.push(poke);
+                            })
+                        }
+                    });
+                }
+                res.json(pokemons);
+                // mapObjects.map_cells.map(cell => cell.forts)
+                //     .reduce((a, b) => a.concat(b))
+                //     .filter(fort => fort.type === 0)
+                //     .forEach(fort => client.getGymDetails(fort.id, fort.latitude, fort.longitude));
+
+                //return client.batchCall();
+            })
+            // .then(gyms => {
+
+
+            // })
             .catch(console.error);
 
 
@@ -167,6 +271,22 @@ module.exports = function (server, PokeioCollection, gymLocations, pokemon, fire
             if (enumObj[key] === val) return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
         }
         return null;
+    }
+
+    function getClient(lat, long) {
+        var result = PokeioCollection.filter(function (poke) {
+
+            return lat >= poke.latRange[0] && lat <= poke.latRange[1] &&
+                long >= poke.longRange[0] && long <= poke.longRange[1];
+        });
+
+
+        if (result.length == 1) {
+            return result[0];
+        }
+        else {
+            return null;
+        }
     }
 
 }

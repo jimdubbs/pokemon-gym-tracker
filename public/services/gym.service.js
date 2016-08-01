@@ -14,9 +14,11 @@
             loading: false,
             gyms: [],
             getGymData: getGymData,
+            updateGymData: updateGymData,
             getGyms: getGyms,
             heartbeat: heartbeat,
-            getPokemon: getPokemon
+            getPokemon: getPokemon,
+            selectedGym: {}
             
         };
 
@@ -34,8 +36,25 @@
             });
         }
 
+        function updateGymData(data){
+            
+            var gymKeys = Object.keys(service.gyms);
+
+            gymKeys.forEach(function(gym){
+                
+                if (service.gyms[gym].gym_state.fort_data.id == data.gym_state.fort_data.id){
+                    console.log(service.gyms[gym]);
+                    service.gyms[gym].gym_state = data.gym_state;
+                    service.gyms[gym].lastUpdate = data.lastUpdate;
+                }
+            })
+            // service.gyms.forEach(function(gym){
+            //     console.log(gym);
+            // })
+        }
+
         function getGymData(gym){
-            return $http.post(urlService.apiUrl+'api/getGymDetails', {
+            return $http.post(urlService.apiUrl+'api/updateGymDetails', {
                 gym:gym
             })
             .then(function (response) {
@@ -46,7 +65,7 @@
         }
         
         function heartbeat(lat,long){
-            return $http.post(urlService.apiUrl+'api/heartbeat', {
+            return $http.post(urlService.apiUrl+'api/pokeHeartbeat', {
                 lat:lat, long: long
             })
             .then(function (response) {

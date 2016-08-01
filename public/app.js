@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    angular.module('main', ['ui.router', 'ngResource', 'ngAnimate', 'ngMaterial', 'ngStorage', 'uiGmapgoogle-maps'
-
+    angular.module('main', ['ui.router', 'ngResource', 'ngAnimate', 'ngMaterial', 'ngStorage', 'uiGmapgoogle-maps',
+    'angularMoment'
     ])
 
         .config(function ($provide, $stateProvider, $urlRouterProvider, $locationProvider,
@@ -30,10 +30,10 @@
                     url: '/',
                     templateUrl: '/layout/master.html'
                 })
-                .state('gyms', {
+                .state('gym', {
                     controller: 'GymsViewController',
                     controllerAs: 'vm',
-                    url: '/gyms',
+                    url: '/gym',
                     templateUrl: '/components/gyms/gyms.html'
                 });
 
