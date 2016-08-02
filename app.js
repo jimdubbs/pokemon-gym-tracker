@@ -156,6 +156,20 @@ var pokeCred = [
         longRange: [-52.87040591239929,-52.86794900894165]
 
 
+    },
+    {
+        name: 'Holy Family Church',
+        username: 'jimdubbs04',
+        password: 'P@ssw0rd',
+        provider: 'ptc',
+        location: {
+            type: 'coords',
+            coords: { latitude: 47.53571800479104, longitude: -52.89920210838318, altitude: 18 }
+        },
+        latRange: [47.53571800479104,47.5369131462348],
+        longRange: [-52.89920210838318,-52.897281646728516]
+
+
     }]
 
 var PokeIOCollection = [];
@@ -210,7 +224,7 @@ firebase.initializeApp({
 });
 
 require('./api/routes.js')(app, PokeIOCollection, pokemon, firebase);
-//require('./api/heartbeat.js')(app, PokeIOCollection,  pokemon, firebase);
+require('./api/heartbeat.js')(app, PokeIOCollection,  pokemon, firebase);
 app.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname + '/public/index.html'));
 });

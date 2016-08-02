@@ -107,6 +107,7 @@
     }
 
     MasterViewController.prototype.updateGymData = function (gym) {
+        //console.log(gym);
         var vm = this;
         vm.gymService.getGymData(gym)
             .then(function(data){

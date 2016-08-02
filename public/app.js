@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('main', ['ui.router', 'ngResource', 'ngAnimate', 'ngMaterial', 'ngStorage', 'uiGmapgoogle-maps',
-    'angularMoment'
+    'angularMoment','angular.filter'
     ])
 
         .config(function ($provide, $stateProvider, $urlRouterProvider, $locationProvider,

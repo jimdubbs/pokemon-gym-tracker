@@ -21,7 +21,8 @@
     <md-content flex="100" flex-gt-md="30" layout="row">
         <md-list class="md-dense" flex>
             <md-subheader class="md-no-sticky">Gyms</md-subheader>
-            <md-list-item class="md-3-line" ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms" ng-class="{'gym-red': gym.gym_state.fort_data.team == 'Red','gym-blue': gym.gym_state.fort_data.team == 'Blue', 'gym-yellow': gym.gym_state.fort_data.team == 'Yellow'}">
+            
+            <md-list-item class="md-3-line" ng-click="vm.clickGym(gym)" ng-repeat="gym in vm.gymService.gyms | orderBy: 'name'" ng-class="{'gym-red': gym.gym_state.fort_data.team == 'Red','gym-blue': gym.gym_state.fort_data.team == 'Blue', 'gym-yellow': gym.gym_state.fort_data.team == 'Yellow'}">
                 <img ng-src="{{gym.gym_state.fort_data.guardPokemon.img}}" class="md-avatar" />
 
                 <div class="md-list-item-text" layout="column">
