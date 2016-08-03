@@ -76,7 +76,7 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
                 }
                 startingIndex++;
 
-            }, 8000)
+            }, 13000)
 
         }, function (errorObject) {
             console.log("The read failed: " + errorObject.code);
@@ -88,7 +88,7 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
 
         ref.child('gyms').once('value').then(function (snapshot) {
             var gyms = snapshot.val();
-            console.log('we in the heartbeat');
+            console.log('we in the heartbeat');ß
 
             var gymKeys = Object.keys(gyms);
 
@@ -149,7 +149,7 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
                 }
                 startingIndex++;
 
-            }, 10000)
+            }, 13000)
 
         }, function (errorObject) {
             console.log("The read failed: " + errorObject.code);

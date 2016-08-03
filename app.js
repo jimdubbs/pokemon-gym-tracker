@@ -51,7 +51,7 @@ app.use(cors());
 var pokeCred = [
     //manuels 2 gyms
     {
-        name: 'Manuels',
+        name: 'manuels',
         username: 'pineapple20',
         password: 'ThisIsIt',
         provider: 'ptc',
@@ -60,7 +60,8 @@ var pokeCred = [
             coords: { latitude: 47.51859189633616, longitude: -52.956225872039795, altitude: 18 }
         },
         latRange: [47.51859189633616, 47.52062066135589],
-        longRange: [-52.956225872039795, -52.945518493652344]
+        longRange: [-52.956225872039795, -52.945518493652344],
+        gyms: []
 
     },//holyrood
     {
@@ -73,10 +74,11 @@ var pokeCred = [
             coords: { latitude: 47.38196286171234, longitude: -53.1423282623291, altitude: 18 }
         },
         latRange: [47.38196286171234, 47.3863504837041],
-        longRange: [-53.1423282623291, -53.12207221984863]
+        longRange: [-53.1423282623291, -53.12207221984863],
+        gyms: []
     },//pool/allsaints
     {
-        name: 'pool/allsaints',
+        name: 'pool-allsaints',
         username: 'SkateboardHero20',
         password: 'ThisIsIt',
         provider: 'ptc',
@@ -85,7 +87,8 @@ var pokeCred = [
             coords: { latitude: 47.5060407920686, longitude: -52.985172271728516, altitude: 18 }
         },
         latRange: [47.5060407920686, 47.51128769270282],
-        longRange: [-52.985172271728516, -52.9740571975708]
+        longRange: [-52.985172271728516, -52.9740571975708],
+        gyms: []
 
     },//marina
     {
@@ -98,7 +101,8 @@ var pokeCred = [
             coords: { latitude: 47.50931654292719, longitude: -53.00251007080078, altitude: 18 }
         },
         latRange: [47.50931654292719,47.51453413094881],
-        longRange: [-53.00251007080078,-52.99431324005127]
+        longRange: [-53.00251007080078,-52.99431324005127],
+        gyms: []
 
     },//neds
     {
@@ -111,7 +115,8 @@ var pokeCred = [
             coords: { latitude: 47.48374286308429, longitude: -53.0145263671875, altitude: 18 }
         },
         latRange: [47.48374286308429,47.4902389458637],
-        longRange: [-53.0145263671875,-53.009634017944336]
+        longRange: [-53.0145263671875,-53.009634017944336],
+        gyms: []
 
 
     },//bistro
@@ -125,12 +130,13 @@ var pokeCred = [
             coords: { latitude: 47.47373616399221, longitude: -53.059115409851074, altitude: 18 }
         },
         latRange: [47.474983479729254,47.47895728825277],
-        longRange: [-53.05842876434326,-53.054137229919434]
+        longRange: [-53.05842876434326,-53.054137229919434],
+        gyms: []
 
 
     },//topsail chruch
     {
-        name: 'topsail church',
+        name: 'topsail-church',
         username: 'FeelsBadMan13',
         password: 'ThisIsIt',
         provider: 'ptc',
@@ -139,12 +145,13 @@ var pokeCred = [
             coords: { latitude: 47.47373616399221, longitude: -53.059115409851074, altitude: 18 }
         },
         latRange: [47.53796339956123,47.540295611028995],
-        longRange: [-52.93792247772217,-52.933502197265625]
+        longRange: [-52.93792247772217,-52.933502197265625],
+        gyms: []
 
 
     },
     {
-        name: 'Paradise Rec',
+        name: 'Paradise-Rec',
         username: 'FeelsBadMan14',
         password: 'ThisIsIt',
         provider: 'ptc',
@@ -153,12 +160,13 @@ var pokeCred = [
             coords: { latitude: 47.47373616399221, longitude: -53.059115409851074, altitude: 18 }
         },
         latRange: [47.523286918933046,47.52458377240933],
-        longRange: [-52.87040591239929,-52.86794900894165]
+        longRange: [-52.87040591239929,-52.86794900894165],
+        gyms: []
 
 
     },
     {
-        name: 'Holy Family Church',
+        name: 'Holy-Family-Church',
         username: 'jimdubbs04',
         password: 'P@ssw0rd',
         provider: 'ptc',
@@ -167,7 +175,8 @@ var pokeCred = [
             coords: { latitude: 47.53571800479104, longitude: -52.89920210838318, altitude: 18 }
         },
         latRange: [47.53571800479104,47.5369131462348],
-        longRange: [-52.89920210838318,-52.897281646728516]
+        longRange: [-52.89920210838318,-52.897281646728516],
+        gyms: []
 
 
     }]
@@ -177,19 +186,27 @@ var PokeIOCollection = [];
 const pogobuf = require('pogobuf');
 pokeCred.forEach(function (element, i, array) {
 
-    var login = new pogobuf.PTCLogin(),
-        client = new pogobuf.Client();
+    var 
+        client = new pogobuf.Client(pokeCred[i].provider,pokeCred[i].username, pokeCred[i].password);
 
-    login.login(pokeCred[i].username, pokeCred[i].password)
-        .then(token => {
-            client.setAuthInfo('ptc', token);
-            client.setPosition(pokeCred[i].latRange[0], pokeCred[i].longRange[0]);
-            return client.init();
-        }).then(() => {
-            console.log('INIT!');
-            PokeIOCollection.push({ client: client, latRange: pokeCred[i].latRange, longRange: pokeCred[i].longRange , name: pokeCred[i].name});
+        client.init()
+            .then(function(data){
+                console.log('all good');
+                PokeIOCollection.push({ client: client, latRange: pokeCred[i].latRange, longRange: pokeCred[i].longRange , name: pokeCred[i].name, gyms: [],
+                    latitude: pokeCred[i].location.coords.latitude,longitude: pokeCred[i].location.coords.longitude});
+            }).catch(console.error);
 
-        }).catch(console.error);
+
+    // login.login(pokeCred[i].username, pokeCred[i].password)
+        // .then(token => {
+        //     client.setAuthInfo('ptc', token);
+        //     client.setPosition(pokeCred[i].latRange[0], pokeCred[i].longRange[0]);
+        //     return client.init();
+        // }).then(() => {
+        //     console.log('INIT!');
+        //     PokeIOCollection.push({ client: client, latRange: pokeCred[i].latRange, longRange: pokeCred[i].longRange , name: pokeCred[i].name});
+
+        // }).catch(console.error);
 });
 
 var holyroodLat = [47.38196286171234, 47.3863504837041];
@@ -224,7 +241,7 @@ firebase.initializeApp({
 });
 
 require('./api/routes.js')(app, PokeIOCollection, pokemon, firebase);
-require('./api/heartbeat.js')(app, PokeIOCollection,  pokemon, firebase);
+require('./api/heartbeatNew.js')(app, PokeIOCollection,  pokemon, firebase);
 app.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname + '/public/index.html'));
 });
