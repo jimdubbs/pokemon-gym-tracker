@@ -71,7 +71,7 @@ var pokeCred = [
         provider: 'ptc',
         location: {
             type: 'coords',
-            coords: { latitude: 47.38196286171234, longitude: -53.1423282623291, altitude: 18 }
+            coords: { latitude: 47.38283460376077, longitude: -53.13261196017265, altitude: 18 }
         },
         latRange: [47.38196286171234, 47.3863504837041],
         longRange: [-53.1423282623291, -53.12207221984863],

@@ -86,8 +86,7 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
             }
 
 
-            //testing
-
+            // //Manuels
             setInterval(function () {
                 console.log('manuels heartbeat');
                 var client = manuelsClient.client;
@@ -104,26 +103,186 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
                         return client.batchCall();
                     })
                     .then(function (data) {
-                        data.forEach(function (gym) {
-                            var refTest = db.ref('pokemon/gyms');
-                            refTest.orderByChild("gym_state/fort_data/id").equalTo(gym.gym_state.fort_data.id).once("value", function (snapshot) {
-                                if (snapshot.val() !== null) {
-                                    try {
-                                        //snapshot.update(data);
-
-                                        var id = Object.keys(snapshot.val())[0];
-                                        var gymRef = db.ref('pokemon/gyms/' + id);
-                                        gym.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gym.gym_state.fort_data.owned_by_team);
-                                        gym.lastUpdate = new Date();
-                                        gymRef.update(gym);
-                                    }
-                                    catch (exception) { console.log(exception) }
-                                }
-                            });
-                        });
+                        updateGyms(data);
                     });
             }, 20000)
 
+
+            //holyrood
+            setInterval(function () {
+                console.log('holyrood heartbeat');
+                var client = holyroodClient.client;
+                var cellIDs = getCellIDs(10, holyroodClient.latitude, holyroodClient.longitude);
+                client.setPosition(holyroodClient.latitude, holyroodClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        holyroodClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+
+
+            //pool/all saints
+            setInterval(function () {
+                console.log('pool/all saints heartbeat');
+                var client = poolAllSaintsClient.client;
+                var cellIDs = getCellIDs(10, poolAllSaintsClient.latitude, poolAllSaintsClient.longitude);
+                client.setPosition(poolAllSaintsClient.latitude, poolAllSaintsClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        poolAllSaintsClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+
+
+
+            //marina
+            setInterval(function () {
+                console.log('marina heartbeat');
+                var client = marinaClient.client;
+                var cellIDs = getCellIDs(10, marinaClient.latitude, marinaClient.longitude);
+                client.setPosition(marinaClient.latitude, marinaClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        marinaClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+            //neds
+            setInterval(function () {
+                console.log('neds heartbeat');
+                var client = nedsClient.client;
+                var cellIDs = getCellIDs(10, nedsClient.latitude, nedsClient.longitude);
+                client.setPosition(nedsClient.latitude, nedsClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        nedsClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+
+            //bistro
+            setInterval(function () {
+                console.log('bistro heartbeat');
+                var client = bistroClient.client;
+                var cellIDs = getCellIDs(10, bistroClient.latitude, bistroClient.longitude);
+                client.setPosition(bistroClient.latitude, bistroClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        bistroClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+            //topsail church
+            setInterval(function () {
+                console.log('topsail church heartbeat');
+                var client = topsailChurchClient.client;
+                var cellIDs = getCellIDs(10, topsailChurchClient.latitude, topsailChurchClient.longitude);
+                client.setPosition(topsailChurchClient.latitude, topsailChurchClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        topsailChurchClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+
+
+            //paradise rec
+            setInterval(function () {
+                console.log('paradise rec heartbeat');
+                var client = paradiseRecClient.client;
+                var cellIDs = getCellIDs(10, paradiseRecClient.latitude, paradiseRecClient.longitude);
+                client.setPosition(paradiseRecClient.latitude, paradiseRecClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        paradiseRecClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
+
+            //holy family
+            setInterval(function () {
+                console.log('holy family heartbeat');
+                var client = holyFamilyChurchClient.client;
+                var cellIDs = getCellIDs(10, holyFamilyChurchClient.latitude, holyFamilyChurchClient.longitude);
+                client.setPosition(holyFamilyChurchClient.latitude, holyFamilyChurchClient.longitude);
+                client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+                    .then(mapObjects => {
+                        console.log('heartbeat finished');
+                        client.batchStart();
+                        holyFamilyChurchClient.gyms.forEach(function (gym) {
+                            client.getGymDetails(gym.gym_state.fort_data.id, gym.gym_state.fort_data.latitude, gym.gym_state.fort_data.longitude)
+                        });
+
+                        return client.batchCall();
+                    })
+                    .then(function (data) {
+                        updateGyms(data);
+                    });
+            }, 20000);
 
         }, function (errorObject) {
             console.log("The read failed: " + errorObject.code);
@@ -135,6 +294,48 @@ module.exports = function (server, PokeioCollection, pokemon, firebase) {
     }, 10000);
 
 
+    function updateGyms(data) {
+        if (Array.isArray(data)) {
+            data.forEach(function (gym) {
+                if (gym.gym_state) {
+                    var refTest = db.ref('pokemon/gyms');
+                    refTest.orderByChild("gym_state/fort_data/id").equalTo(gym.gym_state.fort_data.id).once("value", function (snapshot) {
+                        if (snapshot.val() !== null) {
+                            try {
+                                //snapshot.update(data);
+
+                                var id = Object.keys(snapshot.val())[0];
+                                var gymRef = db.ref('pokemon/gyms/' + id);
+                                gym.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, gym.gym_state.fort_data.owned_by_team);
+                                gym.lastUpdate = new Date();
+                                gymRef.update(gym);
+                            }
+                            catch (exception) { console.log(exception) }
+                        }
+                    });
+                }
+            });
+        }
+        else {
+            if (data.gym_state) {
+                var refTest = db.ref('pokemon/gyms');
+                refTest.orderByChild("gym_state/fort_data/id").equalTo(data.gym_state.fort_data.id).once("value", function (snapshot) {
+                    if (snapshot.val() !== null) {
+                        try {
+                            //snapshot.update(data);
+
+                            var id = Object.keys(snapshot.val())[0];
+                            var gymRef = db.ref('pokemon/gyms/' + id);
+                            data.gym_state.fort_data.team = getEnumKeyByValue(POGOProtos.Enums.TeamColor, data.gym_state.fort_data.owned_by_team);
+                            data.lastUpdate = new Date();
+                            gymRef.update(data);
+                        }
+                        catch (exception) { console.log(exception) }
+                    }
+                });
+            }
+        }
+    }
 
     function getTeamName(teamId) {
         switch (teamId) {
